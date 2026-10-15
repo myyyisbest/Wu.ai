@@ -1,0 +1,28 @@
+appId: ai.wu.desktop
+productName: Wu.ai
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - "!src/*"
+  - "!scripts/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!{.env,.env.*,.npmrc}"
+extraResources:
+  - from: resources
+    to: resources
+asarUnpack:
+  - resources/**
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  shortcutName: Wu.ai
