@@ -1,5 +1,6 @@
 import { app, session, type Session } from 'electron'
 import type { ServiceDef } from '../shared/services'
+import { clientHintHeaders } from '../shared/identity'
 
 /**
  * 真实 Chrome UA：Electron 自带 UA 里含 "Electron/x.y.z" 等标记，
@@ -24,17 +25,26 @@ export function serviceSession(def: ServiceDef): Session {
   const ua = chromeUA()
   ses.setUserAgent(ua)
 
-  // Google 登录会拒绝"嵌入式浏览器"：识别依据之一是 Sec-CH-UA 自报品牌为
-  // "Chromium"（Electron 内核如此），改写成真实 Chrome 品牌后 OAuth 可正常走通
+  // 浏览器身份一致性：Cloudflare（grok.com 验证）等风控交叉比对 Sec-CH-UA 请求头
+  // 与页面内 navigator.userAgentData，Electron 原生头自报 "Chromium" 而页面补丁是
+  // "Google Chrome"，不一致即判机器人 → 安全验证无限转圈。这里对所有 http(s)
+  // 请求统一改写，取值与 shared/identity.ts 的页面补丁逐字相同（只改 http/https，
+  // 避免 devtools/file 等内部请求被误改）。
   const major = /Chrome\/(\d+)/.exec(ua)?.[1] ?? '130'
+  const full = /Chrome\/([\d.]+)/.exec(ua)?.[1] ?? `${major}.0.0.0`
+  const hintHeaders = clientHintHeaders(major, full)
   ses.webRequest.onBeforeSendHeaders(
-    { urls: ['*://*.google.com/*'] },
+    { urls: ['http://*/*', 'https://*/*'] },
     (details, callback) => {
-      const headers = { ...details.requestHeaders }
-      headers['Sec-CH-UA'] = `"Google Chrome";v="${major}", "Chromium";v="${major}", "Not=A?Brand";v="24"`
-      headers['Sec-CH-UA-Full-Version-List'] = `"Google Chrome";v="${major}.0.0.0", "Chromium";v="${major}.0.0.0", "Not=A?Brand";v="24.0.0.0"`
-      headers['Sec-CH-UA-Platform'] = '"Windows"'
-      callback({ requestHeaders: headers })
+      callback({
+        requestHeaders: {
+          ...details.requestHeaders,
+          ...hintHeaders,
+          // Electron 原生只发 "zh-CN" 单值，真实 Chrome 是带权重列表（与页面内
+          // navigator.languages 补丁一致）
+          'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7'
+        }
+      })
     }
   )
 

@@ -1,6 +1,6 @@
 // 在应用的指定页面里执行 JS 并返回结果（经 CDP）
 // 用法: node scripts/cdp-eval.mjs <url包含片段> <表达式>
-const port = 9222
+const port = Number(process.argv[4] || 9222)
 const list = await (await fetch(`http://localhost:${port}/json`)).json()
 const frag = process.argv[2] || ''
 const expr = process.argv[3] || 'location.href'

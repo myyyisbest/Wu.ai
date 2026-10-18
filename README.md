@@ -20,6 +20,8 @@
 类型检查：npm run typecheck
 ```
 
+> 注意：项目所在路径含中文时，electron-builder 会报 `ERR_ELECTRON_BUILDER_CANNOT_EXECUTE`（其 app-builder.exe 不支持非 ASCII 路径）。此时请改用 `npm run dist:safe`，它会自动把项目同步到纯 ASCII 路径 `C:\wu-ai-rel` 构建，并把安装包拷回本目录 `release/`。
+
 安装包双击安装后桌面生成 "Wu.ai" 快捷方式。托盘图标可随时找回主窗口。
 
 ## 快捷键

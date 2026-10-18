@@ -1,6 +1,6 @@
 {
   "name": "wu-ai",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wu.ai",
   "main": "./out/main/index.js",
   "author": "Wu.ai",
@@ -9,7 +9,8 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "dist": "electron-vite build && electron-builder --win nsis"
+    "dist": "electron-vite build && electron-builder --win nsis",
+    "dist:safe": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dist-via-ascii.ps1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
